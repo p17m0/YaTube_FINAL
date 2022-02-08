@@ -15,7 +15,6 @@ from django.core.cache import cache
 
 from ..models import Post, Group
 
-
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -60,16 +59,19 @@ class PagesTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         # Собираем в словарь пары "имя_html_шаблона: reverse(name)"
         templates_pages_names = {
-             reverse('posts:index'): 'posts/index.html',
-             (reverse('posts:posts_group', kwargs={'slug': self.group.slug})):
+            reverse('posts:index'): 'posts/index.html',
+            (reverse('posts:posts_group', kwargs={'slug': self.group.slug})):
                 'posts/group_list.html',
-             (reverse('posts:profile',
-                      kwargs={'username': self.user.username})): 'posts/profile.html',
-             (reverse('posts:post_detail',
-                      kwargs={'post_id': PagesTests.post.pk})): 'posts/post_detail.html',
-             reverse('posts:post_create'): 'posts/create_post.html',
-             (reverse('posts:post_edit',
-                      kwargs={'post_id': PagesTests.post.pk})): 'posts/create_post.html',
+            (reverse('posts:profile',
+                     kwargs={'username': self.user.username})):
+                'posts/profile.html',
+            (reverse('posts:post_detail',
+                     kwargs={'post_id': PagesTests.post.pk})):
+                'posts/post_detail.html',
+            reverse('posts:post_create'): 'posts/create_post.html',
+            (reverse('posts:post_edit',
+                     kwargs={'post_id': PagesTests.post.pk})):
+                'posts/create_post.html',
         }
         time.sleep(15)
         for reverse_name, template in templates_pages_names.items():
