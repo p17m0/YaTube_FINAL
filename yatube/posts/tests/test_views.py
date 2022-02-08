@@ -149,7 +149,8 @@ class PagesTests(TestCase):
         page_obj = response.context.get('page_obj')
         self.assertIsInstance(page_obj, Page)
         self.assertEqual(len(page_obj), 1)
-        self.assertEqual(response.context.get('author').username, self.user.username)
+        self.assertEqual(response.context.get('author').username,
+                         self.user.username)
 
     def test_index(self):
         """Проверка view index."""
@@ -164,7 +165,8 @@ class PagesTests(TestCase):
         super().tearDownClass()
         # Модуль shutil - библиотека Python с удобными инструментами
         # для управления файлами и директориями:
-        # создание, удаление, копирование, перемещение, изменение папок и файлов
+        # создание, удаление,
+        # копирование, перемещение, изменение папок и файлов
         # Метод shutil.rmtree удаляет директорию и всё её содержимое
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
