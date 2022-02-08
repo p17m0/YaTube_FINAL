@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 from yatube.settings import QUANTITY
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, User, Comment, Follow
+from .models import Group, Post, User, Follow
 
 
 def pagina(request, posts):

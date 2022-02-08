@@ -61,21 +61,16 @@ class PagesTests(TestCase):
         # Собираем в словарь пары "имя_html_шаблона: reverse(name)"
         templates_pages_names = {
              reverse('posts:index'): 'posts/index.html',
-            (reverse('posts:posts_group', kwargs={'slug': self.group.slug})):
+             (reverse('posts:posts_group', kwargs={'slug': self.group.slug})):
                 'posts/group_list.html',
-            (reverse('posts:profile',
-                     kwargs={'username': self.user.username})):
-                'posts/profile.html',
-            (reverse('posts:post_detail',
-                     kwargs={'post_id': PagesTests.post.pk})):
-                'posts/post_detail.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
-            (reverse('posts:post_edit',
-                     kwargs={'post_id': PagesTests.post.pk})):
-                'posts/create_post.html',
+             (reverse('posts:profile',
+                      kwargs={'username': self.user.username})): 'posts/profile.html',
+             (reverse('posts:post_detail',
+                      kwargs={'post_id': PagesTests.post.pk})): 'posts/post_detail.html',
+             reverse('posts:post_create'): 'posts/create_post.html',
+             (reverse('posts:post_edit',
+                      kwargs={'post_id': PagesTests.post.pk})): 'posts/create_post.html',
         }
-        # Проверяем, что при обращении
-        # к name вызывается соответствующий HTML-шаблон
         time.sleep(15)
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -85,21 +80,14 @@ class PagesTests(TestCase):
     def test_create_show_correct_context(self):
         """Шаблон create сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
-        # Словарь ожидаемых типов полей формы:
-        # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'group': forms.fields.ChoiceField,
             'text': forms.fields.CharField,
             'image': forms.fields.ImageField,
         }
-
-        # Проверяем, что типы полей
-        # формы в словаре context соответствуют ожиданиям
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
-                # Проверяет, что поле формы является экземпляром
-                # указанного класса
                 self.assertIsInstance(form_field, expected)
 
     def test_edit_show_correct_context(self):
