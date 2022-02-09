@@ -1,7 +1,6 @@
 # Каждый логический набор тестов — это класс,
 # который наследуется от базового класса TestCase
 import unittest
-import time
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
