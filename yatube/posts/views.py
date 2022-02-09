@@ -126,10 +126,11 @@ def follow_index(request):
 def profile_follow(request, username):
     author = User.objects.get(username=username)
     user = request.user
-    follow = Follow(author=author, user=user)
-    if len(Follow.objects.filter(author=author, user=user)) == 0:
-        follow.save()
-    return redirect('posts:profile', username=username)
+    if author != user:
+        follow = Follow(author=author, user=user)
+        if len(Follow.objects.filter(author=author, user=user)) == 0:
+            follow.save()
+        return redirect('posts:profile', username=username)
 
 
 @login_required
