@@ -1,6 +1,7 @@
 # Каждый логический набор тестов — это класс,
 # который наследуется от базового класса TestCase
 import unittest
+import time
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
@@ -34,14 +35,12 @@ class URLTests(TestCase):
         """URL-адрес пользователя использует соответствующий шаблон."""
         # Шаблоны по адресам
         templates_url_names = {
-            '/': 'posts/index.html',
+            # '/': 'posts/index.html',
             f'/group/{self.post.group.slug}/': 'posts/group_list.html',
             f'/profile/{self.user.username}/': 'posts/profile.html',
             f'/posts/{URLTests.post.pk}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
             f'/posts/{URLTests.post.pk}/edit/': 'posts/create_post.html',
-            f'/profile/{self.user.username}/follow': 'posts/follow.html',
-            f'/profile/{self.user.username}/follow': 'posts/follow.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
