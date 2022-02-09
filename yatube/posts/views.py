@@ -34,17 +34,17 @@ def posts_group(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-@login_required
 def profile(request, username):
-    author = get_object_or_404(User, username=username)
+    author = User.objects.get(username=username)
     posts = author.posts.all()
-    if author.following.filter(user=request.user).exists():
-        context = {
-            'author': author,
-            'page_obj': pagina(request, posts),
-            'following': True,
-        }
-        return render(request, 'posts/profile.html', context)
+    if request.user.is_authenticated:
+        if author.following.filter(user=request.user).exists():
+            context = {
+                'author': author,
+                'page_obj': pagina(request, posts),
+                'following': True,
+            }
+            return render(request, 'posts/profile.html', context)
     else:
         context = {
             'author': author,
@@ -120,7 +120,6 @@ def follow_index(request):
         return render(request, 'posts/follow.html', context)
 
 
-@login_required
 def profile_follow(request, username):
     author = User.objects.get(username=username)
     user = request.user
@@ -133,7 +132,6 @@ def profile_follow(request, username):
         return redirect('posts:profile', username=username)
 
 
-@login_required
 def profile_unfollow(request, username):
     author = User.objects.get(username=username)
     follower = Follow.objects.get(author=author,
