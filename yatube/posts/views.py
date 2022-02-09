@@ -45,13 +45,13 @@ def profile(request, username):
                 'following': True,
             }
             return render(request, 'posts/profile.html', context)
-    else:
-        context = {
-            'author': author,
-            'page_obj': pagina(request, posts),
-            'following': False,
-        }
-        return render(request, 'posts/profile.html', context)
+        else:
+            context = {
+                'author': author,
+                'page_obj': pagina(request, posts),
+                'following': False,
+            }
+            return render(request, 'posts/profile.html', context)
 
 
 @login_required
@@ -120,6 +120,7 @@ def follow_index(request):
         return render(request, 'posts/follow.html', context)
 
 
+@login_required
 def profile_follow(request, username):
     author = User.objects.get(username=username)
     user = request.user
@@ -132,6 +133,7 @@ def profile_follow(request, username):
         return redirect('posts:profile', username=username)
 
 
+@login_required
 def profile_unfollow(request, username):
     author = User.objects.get(username=username)
     follower = Follow.objects.get(author=author,
