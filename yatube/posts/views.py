@@ -117,7 +117,7 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     if len(Follow.objects.filter(user=request.user)) == 0:
-        context = {'page_obj': None}
+        context = {'page_obj': False}
         return render(request, 'posts/follow.html', context)
     else:
         follower = Follow.objects.get(user=request.user)

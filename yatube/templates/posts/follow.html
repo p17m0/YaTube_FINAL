@@ -4,6 +4,7 @@
       <div class="container py-5">
         {% include 'includes/switcher.html' %}
         <article>
+        {% if page_obj %}
           {% for post in page_obj %}
           <ul>
             <li>
@@ -23,6 +24,7 @@
           {% endthumbnail %}
           {% if not forloop.last %}<hr>{% endif %}
           {% endfor %}
+        {% endif %}
         </article>
         {% include 'includes/paginator.html' %}
       </div>
