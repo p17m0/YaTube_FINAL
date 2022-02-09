@@ -37,21 +37,27 @@ def posts_group(request, slug):
 def profile(request, username):
     author = User.objects.get(username=username)
     posts = author.posts.all()
-    if not request.user.is_authenticated:
-        context = {
-            'author': author,
-            'page_obj': pagina(request, posts),
-            'following': False,
-        }
-        return render(request, 'posts/profile.html', context)
-    elif request.user.is_authenticated:
+    if request.user.is_authenticated:
         if author.following.filter(user=request.user).exists():
             context = {
                 'author': author,
                 'page_obj': pagina(request, posts),
                 'following': True,
+                }
+            return render(request, 'posts/profile.html', context)
+        else:
+            context = {
+                'author': author,
+                'page_obj': pagina(request, posts),
+                'following': False,
             }
             return render(request, 'posts/profile.html', context)
+    else:
+        context = {
+            'author': author,
+            'page_obj': pagina(request, posts),
+        }
+        return render(request, 'posts/profile.html', context)
 
 
 @login_required
