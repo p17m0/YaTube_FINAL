@@ -43,7 +43,7 @@ def profile(request, username):
                 'author': author,
                 'page_obj': pagina(request, posts),
                 'following': True,
-                }
+            }
             return render(request, 'posts/profile.html', context)
         else:
             context = {
