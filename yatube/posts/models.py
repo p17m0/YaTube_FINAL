@@ -47,7 +47,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    text = models.CharField(max_length=200)
+    text = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
         User,
