@@ -30,7 +30,6 @@ class URLTests(TestCase):
             group=cls.group
         )
 
-    @unittest.skip
     def test_urls_uses_correct_template_authorized_client(self):
         """URL-адрес пользователя использует соответствующий шаблон."""
         # Шаблоны по адресам
@@ -42,8 +41,7 @@ class URLTests(TestCase):
             '/create/': 'posts/create_post.html',
             f'/posts/{URLTests.post.pk}/edit/': 'posts/create_post.html',
             f'/profile/{self.user.username}/follow': 'posts/follow.html',
-            f'/profile/{self.user.username}/unfollow': 'posts/follow.html',
-            '/follow/': 'posts/follow.html',
+            f'/profile/{self.user.username}/follow': 'posts/follow.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
