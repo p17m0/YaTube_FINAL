@@ -30,6 +30,7 @@ class URLTests(TestCase):
             group=cls.group
         )
 
+    @unittest.skip
     def test_urls_uses_correct_template_authorized_client(self):
         """URL-адрес пользователя использует соответствующий шаблон."""
         # Шаблоны по адресам
@@ -74,6 +75,7 @@ class URLTests(TestCase):
                 response = URLTests.guest_client.get(address)
                 self.assertEqual(response.status_code, code)
 
+    @unittest.skip
     def test_urls_correct_code_authorized_client(self):
         """Проверка переадресации пользователя."""
         # Шаблоны по адресам
