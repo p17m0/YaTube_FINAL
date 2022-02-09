@@ -38,20 +38,17 @@ def posts_group(request, slug):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
-    page_obj = pagina(request, posts)
-    # author = author.following.filter(user=request.user)
-    # follow = Follow.objects.filter(author=author)
     if author.following.filter(user=request.user).exists():
         context = {
             'author': author,
-            'page_obj': page_obj,
+            'page_obj': pagina(request, posts),
             'following': True,
         }
         return render(request, 'posts/profile.html', context)
     else:
         context = {
             'author': author,
-            'page_obj': page_obj,
+            'page_obj': pagina(request, posts),
             'following': False,
         }
         return render(request, 'posts/profile.html', context)
