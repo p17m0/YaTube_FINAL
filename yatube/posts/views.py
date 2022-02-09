@@ -60,7 +60,6 @@ def profile(request, username):
         return render(request, 'posts/profile.html', context)
 
 
-@login_required
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     # List of active comments for this post
@@ -116,14 +115,12 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    if len(Follow.objects.filter(user=request.user)) == 0:
-        context = {'page_obj': False}
-        return render(request, 'posts/follow.html', context)
-    else:
-        follower = Follow.objects.get(user=request.user)
-        posts = follower.author.posts.all()
-        context = {'page_obj': pagina(request, posts)}
-        return render(request, 'posts/follow.html', context)
+    follow = request.user.follower.all().values('author')
+    posts = Post.objects.filter(
+        author__in=follow).select_related('author')
+    post_list = [post for post in posts]
+    context = {'page_obj': pagina(request, post_list)}
+    return render(request, 'posts/follow.html', context)
 
 
 @login_required
