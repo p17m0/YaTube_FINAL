@@ -1,7 +1,5 @@
 import shutil
 import tempfile
-import time
-import unittest
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -13,7 +11,7 @@ from django.core.paginator import Page
 from yatube.settings import QUANTITY
 from django.core.cache import cache
 
-from ..models import Post, Group
+from ..models import Post, Group, Follow
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -54,8 +52,9 @@ class PagesTests(TestCase):
             image=cls.uploaded
         )
 
-    # Проверяем используемые шаблоны
-    @unittest.skip
+    def setUp(self):
+        cache.clear()
+
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         # Собираем в словарь пары "имя_html_шаблона: reverse(name)"
@@ -74,13 +73,12 @@ class PagesTests(TestCase):
                      kwargs={'post_id': PagesTests.post.pk})):
                 'posts/create_post.html',
         }
-        time.sleep(15)
+
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    @unittest.skip
     def test_create_show_correct_context(self):
         """Шаблон create сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
@@ -94,7 +92,6 @@ class PagesTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
-    @unittest.skip
     def test_edit_show_correct_context(self):
         """Шаблон edit сформирован с правильным контекстом."""
         response = self.authorized_client.get(
@@ -118,7 +115,6 @@ class PagesTests(TestCase):
 
     # Проверяем, что словарь context страницы /posts
     # в первом элементе списка object_list содержит ожидаемые значения
-    @unittest.skip
     def test_posts_group_show_correct_context(self):
         """Шаблон task_list сформирован с правильным контекстом."""
         response = self.authorized_client.get(
@@ -138,7 +134,6 @@ class PagesTests(TestCase):
 
     # Проверяем, что словарь context страницы task/test-slug
     # содержит ожидаемые значения
-    @unittest.skip
     def test_post_detail_pages_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = (self.authorized_client.get(
@@ -146,7 +141,6 @@ class PagesTests(TestCase):
                     kwargs={'post_id': PagesTests.post.pk})))
         self.assertEqual(response.context.get('post').text, self.post.text)
 
-    @unittest.skip
     def test_profile(self):
         """Шаблон profile проверка контекста."""
         response = (self.authorized_client.get(
@@ -158,7 +152,6 @@ class PagesTests(TestCase):
         self.assertEqual(response.context.get('author').username,
                          self.user.username)
 
-    @unittest.skip
     def test_index(self):
         """Проверка view index."""
         response = self.client.get(reverse('posts:index'))
@@ -176,19 +169,6 @@ class PagesTests(TestCase):
         # копирование, перемещение, изменение папок и файлов
         # Метод shutil.rmtree удаляет директорию и всё её содержимое
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
-
-    @override_settings(CACHES={
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        }
-    })
-    @unittest.skip
-    def test_cache(self):
-        """Проверка кэширования."""
-        cache.set('my_key', 'hello, world!', 5)
-        sentinel = object()
-        time.sleep(5)
-        self.assertTrue(cache.get('my_key', sentinel) is sentinel)
 
 
 class PaginationTest(TestCase):
@@ -212,15 +192,14 @@ class PaginationTest(TestCase):
         cls.posts_count = Post.objects.count()
         cls.second_quantity = cls.posts_count - QUANTITY
 
-    @unittest.skip
     def test_index_pagina(self):
         """Проверка view index pagina."""
         # Проверка не работает при кешировании
         response = self.client.get(reverse('posts:index'))
+        cache.clear()
         tm = response.context.get('page_obj')
         self.assertEqual(len(tm), QUANTITY)
 
-    @unittest.skip
     def test_index_second_page_contains_five_records(self):
         """Проверка: на второй странице должно быть три поста."""
         # Проверка не работает при кешировании
@@ -229,7 +208,6 @@ class PaginationTest(TestCase):
         self.assertEqual(len(tm),
                          self.second_quantity)
 
-    @unittest.skip
     def test_profile(self):
         """Шаблон profile проверка контекста."""
         response = (self.authorized_client.get(
@@ -238,7 +216,6 @@ class PaginationTest(TestCase):
         page_obj = response.context.get('page_obj')
         self.assertEqual(len(page_obj), QUANTITY)
 
-    @unittest.skip
     def test_profile_second_page_contains_five_records(self):
         # Проверка: на второй странице должно быть три поста.
         response = (self.authorized_client.get(
@@ -247,7 +224,6 @@ class PaginationTest(TestCase):
         self.assertEqual(len(response.context.get('page_obj')),
                          self.second_quantity)
 
-    @unittest.skip
     def test_group_list_paginator(self):
         response = self.authorized_client.get(
             reverse('posts:posts_group', kwargs={'slug': self.group.slug}))
@@ -256,10 +232,92 @@ class PaginationTest(TestCase):
         page_obj = response.context.get('page_obj')
         self.assertEqual(len(page_obj), QUANTITY)
 
-    @unittest.skip
     def test_group_list_paginator_second_page(self):
         response = self.authorized_client.get(
             reverse('posts:posts_group',
                     kwargs={'slug': self.group.slug}) + '?page=2')
         page_obj = response.context.get('page_obj')
         self.assertEqual(len(page_obj), self.second_quantity)
+
+
+class CacheTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(CacheTest, cls).setUpClass()
+        cls.user = User.objects.create_user(username='HasNoName')
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+        cls.group = Group.objects.create(
+            title='Тестовый заголовок',
+            description='Тестовый текст',
+            slug=3
+        )
+        for i in range(15):
+            cls.post = Post.objects.create(
+                author=cls.user,
+                text=f'{i}',
+                group=cls.group
+            )
+
+    def setUp(self):
+        cache.clear()
+
+    def test_cache_index_page(self):
+        '''Тест для проверки кеша index'''
+        self.post2 = Post.objects.create(
+            author=self.user,
+            text='Тестовая группа',
+            group=self.group,
+        )
+        pozt = self.post2
+        response = self.authorized_client.get(reverse('posts:index'))
+        page_obj_1 = response.context.get('page_obj').object_list
+        self.assertIn(pozt, page_obj_1)
+        pozt.delete()
+        page_obj_2 = response.context.get('page_obj').object_list
+        self.assertEqual(page_obj_1, page_obj_2)
+        cache.clear()
+        page_obj_2 = response.context.get('page_obj').object_list
+        self.assertEqual(page_obj_1, page_obj_2)
+
+
+class FollowTests(TestCase):
+
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='HasNoName', password=1)
+        self.user2 = User.objects.create_user(username='HasNoName2', password=2)
+
+        self.authorized_client1 = Client()
+        self.authorized_client2 = Client()
+
+        self.post = Post.objects.create(
+            author=self.user2,
+            text=f'TEST CASHHHH',
+            group=None
+        )
+        self.authorized_client1.login(username='HasNoName', password=1)
+        self.authorized_client2.login(username='HasNoName2', password=2)
+
+    def test_follow(self):
+
+        response = self.authorized_client1.get(
+            f'/profile/{self.user2.username}/follow/')
+        response1 = self.authorized_client1.get(f'/follow/')
+        page_obj = response1.context.get('page_obj').object_list
+
+        self.assertEqual(len(page_obj), 1)
+        self.assertEqual(response.status_code, 302)
+
+        s = len(Follow.objects.all())
+        self.assertEqual(s, 1)
+
+        response = self.authorized_client1.get(
+            f'/profile/{self.user2.username}/unfollow/')
+        response1 = self.authorized_client1.get(f'/follow/')
+        page_obj = response1.context.get('page_obj').object_list
+
+        self.assertEqual(len(page_obj), 0)
+        self.assertEqual(response.status_code, 302)
+
+        s = len(Follow.objects.all())
+        self.assertEqual(s, 0)

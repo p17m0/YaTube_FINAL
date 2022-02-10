@@ -1,8 +1,5 @@
-# Каждый логический набор тестов — это класс,
-# который наследуется от базового класса TestCase
-import unittest
-
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import TestCase, Client
 
 from ..models import Group, Post
@@ -30,7 +27,9 @@ class URLTests(TestCase):
             group=cls.group
         )
 
-    @unittest.skip
+    def setUp(self):
+        cache.clear()
+
     def test_urls_uses_correct_template_authorized_client(self):
         """URL-адрес пользователя использует соответствующий шаблон."""
         # Шаблоны по адресам
@@ -47,7 +46,6 @@ class URLTests(TestCase):
                 response = URLTests.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
 
-    @unittest.skip
     def test_urls_uses_correct_template_guest_client(self):
         """URL-адрес гостя использует соответствующий шаблон."""
         # Шаблоны по адресам
@@ -56,8 +54,9 @@ class URLTests(TestCase):
             f'/group/{self.post.group.slug}/': 'posts/group_list.html',
             f'/profile/{self.user.username}/': 'posts/profile.html',
             f'/posts/{URLTests.post.pk}/': 'posts/post_detail.html',
-            '/create/': 'posts/create_post.html',
-            f'/posts/{URLTests.post.pk}/edit/': 'posts/create_post.html',
+            # '/create/': 'posts/create_post.html', - GOOD
+            # f'/posts/{URLTests.post.pk}/edit/': 'posts/create_post.html',
+            '/something_page_for_404':  'core/404.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
@@ -75,7 +74,6 @@ class URLTests(TestCase):
                 response = URLTests.guest_client.get(address)
                 self.assertEqual(response.status_code, code)
 
-    @unittest.skip
     def test_urls_correct_code_authorized_client(self):
         """Проверка переадресации пользователя."""
         # Шаблоны по адресам
