@@ -56,7 +56,7 @@ class URLTests(TestCase):
             f'/posts/{URLTests.post.pk}/': 'posts/post_detail.html',
             # '/create/': 'posts/create_post.html', - GOOD
             # f'/posts/{URLTests.post.pk}/edit/': 'posts/create_post.html',
-            '/something_page_for_404':  'core/404.html',
+            '/something_page_for_404': 'core/404.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):

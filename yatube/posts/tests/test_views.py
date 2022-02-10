@@ -285,14 +285,15 @@ class FollowTests(TestCase):
 
     def setUp(self):
         self.user1 = User.objects.create_user(username='HasNoName', password=1)
-        self.user2 = User.objects.create_user(username='HasNoName2', password=2)
+        self.user2 = User.objects.create_user(username='HasNoName2',
+                                              password=2)
 
         self.authorized_client1 = Client()
         self.authorized_client2 = Client()
 
         self.post = Post.objects.create(
             author=self.user2,
-            text=f'TEST CASHHHH',
+            text='TEST CASHHHH',
             group=None
         )
         self.authorized_client1.login(username='HasNoName', password=1)
@@ -302,7 +303,7 @@ class FollowTests(TestCase):
 
         response = self.authorized_client1.get(
             f'/profile/{self.user2.username}/follow/')
-        response1 = self.authorized_client1.get(f'/follow/')
+        response1 = self.authorized_client1.get('/follow/')
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 1)
@@ -313,7 +314,7 @@ class FollowTests(TestCase):
 
         response = self.authorized_client1.get(
             f'/profile/{self.user2.username}/unfollow/')
-        response1 = self.authorized_client1.get(f'/follow/')
+        response1 = self.authorized_client1.get('/follow/')
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 0)
