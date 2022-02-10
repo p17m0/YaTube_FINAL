@@ -127,6 +127,10 @@ def profile_follow(request, username):
         if len(Follow.objects.filter(author=author, user=user)) == 0:
             follow.save()
         return redirect('posts:profile', username=username)
+    else:
+        # У меня с этим проходит тест:
+        # tests / test_follow.py::TestFollow::test_follow_auth
+        return redirect('posts:profile', username=username)
 
 
 @login_required
