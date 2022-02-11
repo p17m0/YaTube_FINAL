@@ -37,20 +37,20 @@ def posts_group(request, slug):
 def profile(request, username):
     author = User.objects.get(username=username)
     posts = author.posts.all()
-    following = request.user.is_authenticated \
-        and author.following.filter(user=request.user).exists()
+    following = (request.user.is_authenticated
+                 and author.following.filter(user=request.user).exists())
     if following:
         context = {
             'author': author,
             'page_obj': pagina(request, posts),
-            'following': True,
+            'following': following,
         }
         return render(request, 'posts/profile.html', context)
     else:
         context = {
             'author': author,
             'page_obj': pagina(request, posts),
-            'following': False,
+            'following': following,
         }
         return render(request, 'posts/profile.html', context)
 
@@ -123,9 +123,8 @@ def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     user = request.user
     if author != user:
-        follow = Follow(author=author, user=user)
-        if len(Follow.objects.filter(author=author, user=user)) == 0:
-            follow.save()
+        if not Follow.objects.filter(author=author, user=user).exists():
+            Follow.objects.create(author=author, user=user)
         return redirect('posts:profile', username=username)
     else:
         # У меня с этим проходит тест:

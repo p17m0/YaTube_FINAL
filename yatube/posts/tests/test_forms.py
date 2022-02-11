@@ -1,9 +1,9 @@
 import shutil
 import tempfile
-import unittest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
@@ -34,6 +34,9 @@ class PostFormTest(TestCase):
             text='Тестовый текст',
             group=cls.group)
 
+    def setUp(self):
+        cache.clear()
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
@@ -44,7 +47,6 @@ class PostFormTest(TestCase):
         # Метод shutil.rmtree удаляет директорию и всё её содержимое
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
-    @unittest.skip
     def test_PostForm_create(self):
         """Тестируем PostForm."""
         small_gif = (
@@ -78,7 +80,7 @@ class PostFormTest(TestCase):
         self.assertEqual(first_post.text, PostFormTest.post.text)
         self.assertTrue(
             Post.objects.filter(
-                text='Тестовый текст',
+                text=self.post.text,
                 image='posts/small.gif'
             ).exists()
         )
@@ -90,7 +92,7 @@ class PostFormTest(TestCase):
             text='Тестовый текст',
             group=PostFormTest.group)
         form_data = {
-            'text': 'Тестовый текст1',
+            'text': 'Тестовый текст13245454',
         }
         response = self.authorized_client.post(
             reverse('posts:post_edit',
@@ -102,7 +104,7 @@ class PostFormTest(TestCase):
                              reverse('posts:post_detail',
                                      kwargs={'post_id': self.post.pk}))
         first_post = Post.objects.first()
-        self.assertEqual(first_post.text, form_data['text'])
+        self.assertEqual(first_post.text, 'Тестовый текст13245454')
 
     def test_PostForm_edit_guest(self):
         """Тестируем PostForm."""
@@ -122,7 +124,6 @@ class PostFormTest(TestCase):
         posts_count = Post.objects.count()
         self.assertEqual(Post.objects.count(), posts_count)
 
-    @unittest.skip
     def test_PostForm_create_guest(self):
         form_data = {
             'text': 'Тестовый текст',
@@ -137,19 +138,33 @@ class PostFormTest(TestCase):
         posts_count = Post.objects.count()
         self.assertEqual(Post.objects.count(), posts_count)
 
-    @unittest.skip
     def test_CommentForm_guest(self):
         comments_count = Comment.objects.count()
         form_data = {
             'text': 'Тестовый текст',
         }
         response = self.guest_client.post(
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True
         )
-        login = redirect_to_login(
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk})).url
-
+        login = redirect_to_login(reverse('posts:add_comment',
+                                          kwargs={'post_id': self.post.pk})).url
         self.assertRedirects(response, login)
         self.assertEqual(Comment.objects.count(), comments_count)
+
+    def test_CommentForm(self):
+        comments_count = Comment.objects.count()
+        form_data = {
+            'text': 'Тестовый текст',
+        }
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
+            data=form_data,
+            follow=True
+        )
+
+        self.assertRedirects(response,
+                             reverse('posts:post_detail',
+                                     kwargs={'post_id': self.post.pk}))
+        self.assertNotEqual(Comment.objects.count(), comments_count)

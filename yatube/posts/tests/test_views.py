@@ -163,11 +163,6 @@ class PagesTests(TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        # Модуль shutil - библиотека Python с удобными инструментами
-        # для управления файлами и директориями:
-        # создание, удаление,
-        # копирование, перемещение, изменение папок и файлов
-        # Метод shutil.rmtree удаляет директорию и всё её содержимое
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
@@ -284,41 +279,61 @@ class CacheTest(TestCase):
 class FollowTests(TestCase):
 
     def setUp(self):
-        self.user1 = User.objects.create_user(username='HasNoName', password=1)
-        self.user2 = User.objects.create_user(username='HasNoName2',
-                                              password=2)
+        # self.user1 = User.objects.create_user(username='HasNoName', password=1)
+        # self.user2 = User.objects.create_user(username='HasNoName2',
+                                              # password=2)
+        self.user1 = User.objects.create_user(username='HasNoName1')
+        self.user2 = User.objects.create_user(username='HasNoName2')
 
         self.authorized_client1 = Client()
         self.authorized_client2 = Client()
 
+        self.authorized_client1.force_login(self.user1)
+        self.authorized_client2.force_login(self.user2)
+
         self.post = Post.objects.create(
             author=self.user2,
-            text='TEST CASHHHH',
+            text='TEST CeSHHHH',
             group=None
         )
-        self.authorized_client1.login(username='HasNoName', password=1)
-        self.authorized_client2.login(username='HasNoName2', password=2)
 
     def test_follow(self):
-
-        response = self.authorized_client1.get(
-            f'/profile/{self.user2.username}/follow/')
-        response1 = self.authorized_client1.get('/follow/')
+        response = self.authorized_client1.get(reverse('posts:profile_follow',
+                                                       kwargs={'username': self.user2.username}))
+        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 1)
         self.assertEqual(response.status_code, 302)
-
         s = len(Follow.objects.all())
         self.assertEqual(s, 1)
 
-        response = self.authorized_client1.get(
-            f'/profile/{self.user2.username}/unfollow/')
-        response1 = self.authorized_client1.get('/follow/')
+
+    def test_unfollow(self):
+        response = self.authorized_client1.get(reverse('posts:profile_follow',
+                                                       kwargs={'username': self.user2.username}))
+
+        response = self.authorized_client1.get(reverse('posts:profile_unfollow',
+                                                       kwargs={'username': self.user2.username}))
+
+        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 0)
-        self.assertEqual(response.status_code, 302)
 
+    def test_follow_post(self):
+        response = self.authorized_client1.get(reverse('posts:profile_follow',
+                                                       kwargs={'username': self.user2.username}))
+        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
+        page_obj = response1.context.get('page_obj').object_list
+
+        self.assertEqual(len(page_obj), 1)
         s = len(Follow.objects.all())
-        self.assertEqual(s, 0)
+        self.assertEqual(s, 1)
+
+    def test_guest_follow(self):
+        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
+        page_obj = response1.context.get('page_obj').object_list
+
+        self.assertEqual(len(page_obj), 0)
+        
