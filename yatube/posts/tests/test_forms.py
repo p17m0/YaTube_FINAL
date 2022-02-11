@@ -148,8 +148,9 @@ class PostFormTest(TestCase):
             data=form_data,
             follow=True
         )
-        login = redirect_to_login(reverse('posts:add_comment',
-                                          kwargs={'post_id': self.post.pk})).url
+        login = redirect_to_login(
+            reverse('posts:add_comment',
+                    kwargs={'post_id': self.post.pk})).url
         self.assertRedirects(response, login)
         self.assertEqual(Comment.objects.count(), comments_count)
 
