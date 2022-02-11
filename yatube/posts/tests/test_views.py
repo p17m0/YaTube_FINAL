@@ -279,9 +279,6 @@ class CacheTest(TestCase):
 class FollowTests(TestCase):
 
     def setUp(self):
-        # self.user1 = User.objects.create_user(username='HasNoName', password=1)
-        # self.user2 = User.objects.create_user(username='HasNoName2',
-                                              # password=2)
         self.user1 = User.objects.create_user(username='HasNoName1')
         self.user2 = User.objects.create_user(username='HasNoName2')
 
@@ -298,8 +295,9 @@ class FollowTests(TestCase):
         )
 
     def test_follow(self):
-        response = self.authorized_client1.get(reverse('posts:profile_follow',
-                                                       kwargs={'username': self.user2.username}))
+        response = self.authorized_client1.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.user2.username}))
         response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 
@@ -308,13 +306,14 @@ class FollowTests(TestCase):
         s = len(Follow.objects.all())
         self.assertEqual(s, 1)
 
-
     def test_unfollow(self):
-        response = self.authorized_client1.get(reverse('posts:profile_follow',
-                                                       kwargs={'username': self.user2.username}))
+        self.authorized_client1.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.user2.username}))
 
-        response = self.authorized_client1.get(reverse('posts:profile_unfollow',
-                                                       kwargs={'username': self.user2.username}))
+        self.authorized_client1.get(
+            reverse('posts:profile_unfollow',
+                    kwargs={'username': self.user2.username}))
 
         response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
@@ -322,8 +321,9 @@ class FollowTests(TestCase):
         self.assertEqual(len(page_obj), 0)
 
     def test_follow_post(self):
-        response = self.authorized_client1.get(reverse('posts:profile_follow',
-                                                       kwargs={'username': self.user2.username}))
+        self.authorized_client1.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.user2.username}))
         response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 
@@ -336,4 +336,3 @@ class FollowTests(TestCase):
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 0)
-        
