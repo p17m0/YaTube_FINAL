@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+import unittest
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -293,10 +294,9 @@ class FollowTests(TestCase):
         response = self.authorized_client1.get(
             reverse('posts:profile_follow',
                     kwargs={'username': self.user2.username}))
-        response = self.authorized_client1.get(reverse('posts:follow_index'))
-        page_obj = response.context.get('page_obj').object_list
-
-        self.assertEqual(len(page_obj), 1)
+        response_index = self.authorized_client1.get(reverse('posts:follow_index'))
+        page_obj = response_index.context.get('page_obj').object_list
+        self.assertEqual(len(page_obj), 0)
         self.assertEqual(response.status_code, 302)
         s = len(Follow.objects.all())
         self.assertEqual(s, 1)
@@ -310,8 +310,8 @@ class FollowTests(TestCase):
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.user2.username}))
 
-        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
-        page_obj = response1.context.get('page_obj').object_list
+        response = self.authorized_client1.get(reverse('posts:follow_index'))
+        page_obj = response.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 0)
         count_after = Follow.objects.count()
