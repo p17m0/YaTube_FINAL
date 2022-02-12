@@ -288,7 +288,6 @@ class FollowTests(TestCase):
         self.authorized_client1.force_login(self.user1)
         self.authorized_client2.force_login(self.user2)
 
-
     def test_follow(self):
         count_before = Follow.objects.count()
         response = self.authorized_client1.get(
