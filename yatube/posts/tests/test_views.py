@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-import unittest
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -294,7 +293,8 @@ class FollowTests(TestCase):
         response = self.authorized_client1.get(
             reverse('posts:profile_follow',
                     kwargs={'username': self.user2.username}))
-        response_index = self.authorized_client1.get(reverse('posts:follow_index'))
+        response_index = self.authorized_client1.get(
+            reverse('posts:follow_index'))
         page_obj = response_index.context.get('page_obj').object_list
         self.assertEqual(len(page_obj), 0)
         self.assertEqual(response.status_code, 302)
