@@ -288,29 +288,25 @@ class FollowTests(TestCase):
         self.authorized_client1.force_login(self.user1)
         self.authorized_client2.force_login(self.user2)
 
-        self.post = Post.objects.create(
-            author=self.user2,
-            text='TEST CeSHHHH',
-            group=None
-        )
 
     def test_follow(self):
+        count_before = Follow.objects.count()
         response = self.authorized_client1.get(
             reverse('posts:profile_follow',
                     kwargs={'username': self.user2.username}))
-        response1 = self.authorized_client1.get(reverse('posts:follow_index'))
-        page_obj = response1.context.get('page_obj').object_list
+        response = self.authorized_client1.get(reverse('posts:follow_index'))
+        page_obj = response.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 1)
         self.assertEqual(response.status_code, 302)
         s = len(Follow.objects.all())
         self.assertEqual(s, 1)
+        count_after = Follow.objects.count()
+        self.assertNotEqual(count_before, count_after)
 
     def test_unfollow(self):
-        self.authorized_client1.get(
-            reverse('posts:profile_follow',
-                    kwargs={'username': self.user2.username}))
-
+        Follow.objects.create(author=self.user2, user=self.user1)
+        count_before = Follow.objects.count()
         self.authorized_client1.get(
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.user2.username}))
@@ -319,11 +315,16 @@ class FollowTests(TestCase):
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 0)
+        count_after = Follow.objects.count()
+        self.assertNotEqual(count_before, count_after)
 
     def test_follow_post(self):
-        self.authorized_client1.get(
-            reverse('posts:profile_follow',
-                    kwargs={'username': self.user2.username}))
+        self.post = Post.objects.create(
+            author=self.user2,
+            text='TEST FALLOWERZ',
+            group=None
+        )
+        Follow.objects.create(author=self.user2, user=self.user1)
         response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 
@@ -332,6 +333,11 @@ class FollowTests(TestCase):
         self.assertEqual(s, 1)
 
     def test_guest_follow(self):
+        self.post = Post.objects.create(
+            author=self.user2,
+            text='TEST FALLOWERZ',
+            group=None
+        )
         response1 = self.authorized_client1.get(reverse('posts:follow_index'))
         page_obj = response1.context.get('page_obj').object_list
 

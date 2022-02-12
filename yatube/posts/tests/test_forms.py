@@ -87,10 +87,6 @@ class PostFormTest(TestCase):
 
     def test_PostForm_edit(self):
         """Тестируем PostForm."""
-        self.post = Post.objects.create(
-            author=PostFormTest.user,
-            text='Тестовый текст',
-            group=PostFormTest.group)
         form_data = {
             'text': 'Тестовый текст13245454',
         }
@@ -104,7 +100,8 @@ class PostFormTest(TestCase):
                              reverse('posts:post_detail',
                                      kwargs={'post_id': self.post.pk}))
         first_post = Post.objects.first()
-        self.assertEqual(first_post.text, 'Тестовый текст13245454')
+        self.assertEqual(first_post.text, form_data['text'])
+        self.assertEqual(first_post.author, self.post.author)
 
     def test_PostForm_edit_guest(self):
         """Тестируем PostForm."""

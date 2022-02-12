@@ -39,20 +39,12 @@ def profile(request, username):
     posts = author.posts.all()
     following = (request.user.is_authenticated
                  and author.following.filter(user=request.user).exists())
-    if following:
-        context = {
-            'author': author,
-            'page_obj': pagina(request, posts),
-            'following': following,
-        }
-        return render(request, 'posts/profile.html', context)
-    else:
-        context = {
-            'author': author,
-            'page_obj': pagina(request, posts),
-            'following': following,
-        }
-        return render(request, 'posts/profile.html', context)
+    context = {
+        'author': author,
+        'page_obj': pagina(request, posts),
+        'following': following,
+    }
+    return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
@@ -126,10 +118,7 @@ def profile_follow(request, username):
         if not Follow.objects.filter(author=author, user=user).exists():
             Follow.objects.create(author=author, user=user)
         return redirect('posts:profile', username=username)
-    else:
-        # У меня с этим проходит тест:
-        # tests / test_follow.py::TestFollow::test_follow_auth
-        return redirect('posts:profile', username=username)
+    return redirect('posts:profile', username=username)
 
 
 @login_required
