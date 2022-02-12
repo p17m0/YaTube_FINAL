@@ -297,7 +297,7 @@ class FollowTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
         count_after = Follow.objects.count()
-        self.assertEqual(count_after, count_before+1)
+        self.assertEqual(count_after, count_before + 1)
 
     def test_unfollow(self):
         Follow.objects.create(author=self.user2, user=self.user1)
@@ -307,7 +307,7 @@ class FollowTests(TestCase):
                     kwargs={'username': self.user2.username}))
 
         count_after = Follow.objects.count()
-        self.assertEqual(count_after, count_before-1)
+        self.assertEqual(count_after, count_before - 1)
 
     def test_follow_post(self):
         self.post = Post.objects.create(
