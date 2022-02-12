@@ -293,15 +293,11 @@ class FollowTests(TestCase):
         response = self.authorized_client1.get(
             reverse('posts:profile_follow',
                     kwargs={'username': self.user2.username}))
-        response_index = self.authorized_client1.get(
-            reverse('posts:follow_index'))
-        page_obj = response_index.context.get('page_obj').object_list
-        self.assertEqual(len(page_obj), 0)
+
         self.assertEqual(response.status_code, 302)
-        s = len(Follow.objects.all())
-        self.assertEqual(s, 1)
+
         count_after = Follow.objects.count()
-        self.assertNotEqual(count_before, count_after)
+        self.assertEqual(count_after, count_before+1)
 
     def test_unfollow(self):
         Follow.objects.create(author=self.user2, user=self.user1)
@@ -310,12 +306,8 @@ class FollowTests(TestCase):
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.user2.username}))
 
-        response = self.authorized_client1.get(reverse('posts:follow_index'))
-        page_obj = response.context.get('page_obj').object_list
-
-        self.assertEqual(len(page_obj), 0)
         count_after = Follow.objects.count()
-        self.assertNotEqual(count_before, count_after)
+        self.assertEqual(count_after, count_before-1)
 
     def test_follow_post(self):
         self.post = Post.objects.create(
@@ -328,8 +320,8 @@ class FollowTests(TestCase):
         page_obj = response1.context.get('page_obj').object_list
 
         self.assertEqual(len(page_obj), 1)
-        s = len(Follow.objects.all())
-        self.assertEqual(s, 1)
+        len_follow_objects = len(Follow.objects.all())
+        self.assertEqual(len_follow_objects, 1)
 
     def test_guest_follow(self):
         self.post = Post.objects.create(

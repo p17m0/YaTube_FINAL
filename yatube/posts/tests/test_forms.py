@@ -165,4 +165,4 @@ class PostFormTest(TestCase):
         self.assertRedirects(response,
                              reverse('posts:post_detail',
                                      kwargs={'post_id': self.post.pk}))
-        self.assertNotEqual(Comment.objects.count(), comments_count)
+        self.assertEqual(Comment.objects.count(), comments_count+1)
